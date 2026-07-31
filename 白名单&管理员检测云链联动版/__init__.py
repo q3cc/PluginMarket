@@ -1,8 +1,7 @@
 import time
-from typing import Any
+from typing import Any, ClassVar
 
 from tooldelta import Player, Plugin, cfg, fmts, game_utils, plugin_entry, utils
-from tooldelta.internal.launch_cli import FrameNeOmgAccessPoint
 
 
 class WhitelistAndOpCheck(Plugin):
@@ -10,10 +9,10 @@ class WhitelistAndOpCheck(Plugin):
 
     name = "白名单&管理员检测云链联动版"
     author = "猫七街"
-    version = (1, 1, 2)
+    version = (1, 1, 3)
     description = "白名单与管理员状态检测，并向其他插件暴露可复用的管理 API。"
 
-    DEFAULT_CFG = {
+    DEFAULT_CFG: ClassVar[dict[str, Any]] = {
         "检查时间（秒）": 60.0,
         "白名单": {
             "开启状态": False,
@@ -27,7 +26,7 @@ class WhitelistAndOpCheck(Plugin):
         },
     }
 
-    STD_CFG = {
+    STD_CFG: ClassVar[dict[str, Any]] = {
         "检查时间（秒）": float,
         "白名单": {"开启状态": bool, "踢出提示词": str, "白名单玩家": {}},
         "管理员检测": {"开启状态": bool, "提示词": str, "管理员列表": {}},
@@ -37,7 +36,6 @@ class WhitelistAndOpCheck(Plugin):
         """初始化运行时状态并注册插件生命周期回调。"""
         super().__init__(frame)
         self.get_xuid = None
-        self.neomega = None
         self.bot_name = ""
         self._cfg = self.load_config()
 
@@ -89,8 +87,7 @@ class WhitelistAndOpCheck(Plugin):
 
     def on_active(self):
         """在插件激活后挂载控制台入口并启动周期检测。"""
-        self.neomega = self.require_neomega()
-        self.bot_name = self.neomega.get_bot_basic_info().BotName
+        self.bot_name = self.game_ctrl.bot_name
         self.frame.add_console_cmd_trigger(
             ["白名单"],
             None,
@@ -104,12 +101,6 @@ class WhitelistAndOpCheck(Plugin):
             self.console_manage_admins,
         )
         self.start_periodic_check()
-
-    def require_neomega(self):
-        """要求当前启动器具备 NeOmega 能力，否则直接拒绝继续运行。"""
-        if isinstance(self.frame.launcher, FrameNeOmgAccessPoint):
-            return self.frame.launcher.omega
-        raise ValueError("此启动框架无法使用 NeOmega API")
 
     def on_player_join(self, player: Player):
         """玩家进服时按当前配置执行白名单和管理员状态检查。"""
