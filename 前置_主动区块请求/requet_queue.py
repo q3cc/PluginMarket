@@ -1,12 +1,12 @@
 import time
 from .sub_chunk_classifier import sub_chunk_classifier
 from tooldelta import InternalBroadcast
-from tooldelta.constants.packets import PacketIDS
 from tooldelta.mc_bytes_packet import sub_chunk_request
 from tooldelta.utils import fmts, thread_func
 from tooldelta.utils.tooldelta_thread import ToolDeltaThread
 
 from .api import AutoSubChunkRequestAPI
+from .packet_sender import send_sub_chunk_request
 from .define import (
     EMPTY_CHUNK_POS_WITH_DIMENSION,
     EMPTY_SINGLE_SUB_CHUNK,
@@ -98,9 +98,7 @@ class AutoSubChunkRequetQueue:
             if len(multiple_sub_chunks) > 0:
                 for packet in sub_chunk_classifier(multiple_sub_chunks):
                     try:
-                        self.base().game_ctrl.sendPacket(
-                            PacketIDS.IDSubChunkRequest, packet
-                        )
+                        send_sub_chunk_request(self.base().game_ctrl, packet)
                     except Exception:
                         pass
 

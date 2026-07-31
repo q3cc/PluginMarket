@@ -2,9 +2,6 @@ import ctypes
 import threading
 from dataclasses import dataclass
 from tooldelta.mc_bytes_packet import sub_chunk_request
-from tooldelta.internal.launch_cli.neo_libs.blob_hash.blob_hash_holder import (
-    BlobHashHolder,
-)
 from tooldelta import (
     GameCtrl,
     Plugin,
@@ -49,7 +46,7 @@ class AutoSubChunkRequestBase:
     game_ctrl: GameCtrl
 
     LIB: ctypes.CDLL
-    blob_hash: BlobHashHolder
+    blob_hash: object
 
     multiple_pos: dict[str, DimChunkPosWithUnixTime]
     request_radius: int

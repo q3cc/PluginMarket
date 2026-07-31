@@ -1,7 +1,7 @@
 from .define import AutoSubChunkRequestBase
 from .api import AutoSubChunkRequestAPI
 from .sub_chunk_classifier import sub_chunk_classifier
-from tooldelta.constants.packets import PacketIDS
+from .packet_sender import send_sub_chunk_request
 from tooldelta.mc_bytes_packet.base_bytes_packet import BaseBytesPacket
 from tooldelta.utils import thread_func
 from tooldelta.utils.tooldelta_thread import ToolDeltaThread
@@ -156,7 +156,7 @@ class AutoSubChunkRequestSubChunkProcess:
                 multiple_sub_chunks.append((pk.Dimension, (i.x, i.y, i.z)))
             for i in sub_chunk_classifier(multiple_sub_chunks):
                 try:
-                    self.base().game_ctrl.sendPacket(PacketIDS.IDSubChunkRequest, i)
+                    send_sub_chunk_request(self.base().game_ctrl, i)
                 except Exception:
                     pass
 
@@ -238,7 +238,7 @@ class AutoSubChunkRequestSubChunkProcess:
                 multiple_sub_chunks.append((pk.Dimension, (i.x, i.y, i.z)))
             for i in sub_chunk_classifier(multiple_sub_chunks):
                 try:
-                    self.base().game_ctrl.sendPacket(PacketIDS.IDSubChunkRequest, i)
+                    send_sub_chunk_request(self.base().game_ctrl, i)
                 except Exception:
                     pass
 

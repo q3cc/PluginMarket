@@ -10,12 +10,13 @@ from .api import AutoSubChunkRequestAPI
 from .define import AutoSubChunkRequestBase
 from .sub_chunk_process import AutoSubChunkRequestSubChunkProcess
 from .requet_queue import AutoSubChunkRequetQueue
+from .blob_cache import PacketBlobHashHolder
 
 
 class AutoSubChunkRequest(Plugin):
     name = "NieR: Automata"
     author = "2B"
-    version = (0, 4, 5)
+    version = (0, 4, 6)
 
     base: AutoSubChunkRequestBase
     api: AutoSubChunkRequestAPI
@@ -29,6 +30,7 @@ class AutoSubChunkRequest(Plugin):
         self.api = AutoSubChunkRequestAPI(self.base)
         self.requet_queue = AutoSubChunkRequetQueue(self.api)
         self.sub_chunk_process = AutoSubChunkRequestSubChunkProcess(self.api)
+        self.packet_blob_hash = PacketBlobHashHolder(self.game_ctrl)
 
         self.ListenPreload(self.on_def)
         self.ListenActive(self.on_inject)
@@ -39,12 +41,19 @@ class AutoSubChunkRequest(Plugin):
             "ggpp:publish_player_position", self.requet_queue.on_player_position
         )
         self.ListenBytesPacket(PacketIDS.SubChunk, self.sub_chunk_process.on_sub_chunk)
+        self.ListenPacket(
+            PacketIDS.IDClientCacheMissResponse,
+            self.packet_blob_hash.on_cache_miss_response,
+        )
 
     def on_def(self):
         _ = self.GetPluginAPI("循环获取玩家坐标", (0, 0, 4))
 
     def on_inject(self):
-        self.base.blob_hash = self.game_ctrl.blob_hash_holder()
+        try:
+            self.base.blob_hash = self.game_ctrl.blob_hash_holder()
+        except NotImplementedError:
+            self.base.blob_hash = self.packet_blob_hash
         self.load_lib()
         self.requet_queue.auto_poll()
 
